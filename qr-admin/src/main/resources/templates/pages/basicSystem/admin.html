@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>layuiAdmin 后台管理员</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">用户名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="s_name" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">登录账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="s_username" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">手机</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="s_mobile" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">邮箱</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="s_email" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-admin" lay-submit lay-filter="LAY-user-back-search">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-admin" data-type="add">添加</button>
+                <button class="layui-btn layuiadmin-btn-admin" data-type="edit">编辑</button>
+                <button class="layui-btn layuiadmin-btn-admin" data-type="batchdel">删除</button>
+            </div>
+            <table id="LAY-user-back-manage" lay-filter="LAY-user-back-manage"></table>
+            <script type="text/html" id="adStatus">
+                {{#  if(d.status == 0){ }}
+                <button class="layui-btn layui-btn-xs">正常</button>
+                {{#  } else { }}
+                <button class="layui-btn layui-btn-primary layui-btn-xs">禁用</button>
+                {{#  } }}
+            </script>
+            <script type="text/html" id="adLocked">
+                {{#  if(d.locked == 0){ }}
+                <button class="layui-btn layui-btn-xs">正常</button>
+                {{#  } else { }}
+                <button class="layui-btn layui-btn-primary layui-btn-xs">锁定</button>
+                {{#  } }}
+            </script>
+            <script type="text/html" id="table-useradmin-admin">
+                {{#  if(d.name == '超级管理员'){ }}
+                <input type="checkbox" name="layTableCheckbox" lay-skin="primary" disabled="disabled" hidden>
+                {{#  } else { }}
+                <input type="checkbox" name="layTableCheckbox" lay-skin="primary">
+                {{#  } }}
+            </script>
+
+
+        </div>
+    </div>
+</div>
+
+<script src="/layuiadmin/layui/layui.js"></script>
+<script>
+    layui.config({
+        base: '/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'useradmin', 'table'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , table = layui.table;
+        //监听搜索
+        form.on('submit(LAY-user-back-search)', function (data) {
+            var s_name = $('#s_name').val();
+            var s_username = $('#s_username').val();
+            var s_mobile = $('#s_mobile').val();
+            var s_email = $('#s_email').val();
+            //执行重载
+            table.reload('LAY-user-back-manage', {
+                method: 'post'
+                , url: '/basicSystem/queryAdmin'
+                , contentType: "application/json"
+                , dataType: 'json'
+                , where: {
+                    'name': s_name,
+                    'username': s_username,
+                    'mobile': s_mobile,
+                    'email': s_email
+                },
+                page: {
+                    curr: 1
+                }
+                ,done:function(res){
+                    console.log(JSON.stringify(res.data));
+                    if(res.count==0){
+                        layer.msg("未查询到相关数据")
+                        return;
+                    }
+                }
+            })
+            ;
+        });
+        /* 监听指定开关 */
+        form.on('switch(status)', function (data) {
+            var checked = data.elem.checked;//获取是否开关的值
+            var s_status = data.elem.attributes['status-switch'].nodeValue;
+        });
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('LAY-user-back-manage')
+                    , checkData = checkStatus.data; //得到选中的数据
+                //console.log(checkStatus);
+                //console.log(JSON.stringify(checkData))
+                if (checkData.length === 0) {
+                    return layer.msg('请选择数据');
+                }
+                for (var i=0;i<checkData.length;i++){
+                    if(checkData[i].name=="超级管理员"){
+                        return layer.msg("超级管理员不可删除，请重新选择！");
+                    }
+                }
+                layer.confirm('确定删除吗？', function (index) {
+                    $.ajax({
+                        url: "/basicSystem/delAdmin",
+                        type: "POST",
+                        data: JSON.stringify(checkData),
+                        contentType: "application/json",
+                        dataType: 'json',
+                        beforeSend: function (loading) {
+                            loading = layer.load(0, {shade: false});
+                        },
+                        success: function (res) {
+                            if (res.code == "0") {
+                                layer.msg("操作成功");
+                                table.reload('LAY-user-back-manage'); //数据刷新
+                            } else {
+                                layer.msg(res.msg);
+                            }
+                            layer.closeAll('loading'); //关闭loading图标
+                            layer.close(index); //关闭弹层
+                        },
+                        error: function () {
+                            layer.msg("出现问题，请稍后重试！");
+                            layer.closeAll('loading'); //关闭loading图标
+                        }
+                    });
+                    //table.reload('LAY-user-back-manage'); //数据刷新
+                    //layer.msg('已删除');
+                });
+            }
+            , add: function () {
+                layer.open({
+                    type: 2
+                    , title: '添加管理员'
+                    , content: '/basicSystem/addAdmin'
+                    , area: ['420px', '640px']
+                    , btn: ['确定', '取消']
+                    , yes: function (index, layero) {
+                        var iframeWindow = window['layui-layer-iframe' + index]
+                            , submitID = 'addAdmin-submit-button'
+                            , submit = layero.find('iframe').contents().find('#' + submitID);
+                        iframeWindow.layui.form.on('submit(' + 'addAdmin-form' + ')', function (data) {
+                            var loading;
+                            var field = data.field; //获取提交的字段
+                            console.log("获取到的addAdmin提交的字段："+JSON.stringify(field));
+                            //提交 Ajax 成功后，静态更新表格中的数据
+                            $.ajax({
+                                url: "/basicSystem/addAdmin",
+                                type: "POST",
+                                data: JSON.stringify(field),
+                                contentType: "application/json",
+                                dataType: 'json',
+                                beforeSend: function (loading) {
+                                    loading = layer.load(0, {shade: false});
+                                },
+                                success: function (res) {
+                                    if (res.code == "0") {
+                                        table.reload('LAY-user-back-manage'); //数据刷新
+                                        layer.msg("操作成功");
+                                    } else {
+                                        layer.msg(res.msg);
+                                    }
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    layer.close(index); //关闭弹层
+                                },
+                                error: function () {
+                                    layer.msg("出现问题，请稍后重试！");
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    //layer.close(index); //关闭弹层
+                                }
+                            });
+
+                        });
+                        submit.trigger('click');
+                    }
+                });
+            }
+            ,edit: function () {
+                var checkStatus = table.checkStatus('LAY-user-back-manage')
+                    , checkData = checkStatus.data; //得到选中的数据
+                if (checkData.length === 0) {
+                    return layer.msg('请选择数据');
+                }
+                if (checkData.length > 1) {
+                    return layer.msg('请勿选择多条数据');
+                }
+                window.pdata = checkData[0];//给弹窗使用的数据
+                layer.open({
+                    type: 2
+                    , title: '编辑管理员'
+                    , content: '/basicSystem/editAdmin'
+                    , area: ['420px', '640px']
+                    , btn: ['确定', '取消']
+                    , yes: function (index, layero) {
+                        console.log("index is :"+index);
+                        var iframeWindow = window['layui-layer-iframe' + index]
+                            , submitID = 'editAdmin-submit-button'
+                            , submit = layero.find('iframe').contents().find('#' + submitID);
+                        iframeWindow.layui.form.on('submit(' + 'editAdmin-form' + ')', function (data) {
+                            var loading;
+                            var field = data.field; //获取提交的字段
+                            console.log("获取到的editAdmin提交的字段："+JSON.stringify(field));
+                            if(field.password!=null&&field.password!=""){
+                                if(field.password.length<6||field.password.length>12){
+                                    return layer.msg("密码请设置6-12位，如不修改请置为空")
+                                }
+                            }
+                            //提交 Ajax 成功后，静态更新表格中的数据
+                            $.ajax({
+                                url: "/basicSystem/editAdmin",
+                                type: "POST",
+                                data: JSON.stringify(field),
+                                contentType: "application/json",
+                                dataType: 'json',
+                                beforeSend: function (loading) {
+                                    loading = layer.load(0, {shade: false});
+                                },
+                                success: function (res) {
+                                    if (res.code == "0") {
+                                        table.reload('LAY-user-back-manage'); //数据刷新
+                                        layer.msg("操作成功");
+                                    } else {
+                                        layer.msg(res.msg);
+                                    }
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    layer.close(index); //关闭弹层
+                                },
+                                error: function () {
+                                    layer.msg("出现问题，请稍后重试！");
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    //layer.close(index); //关闭弹层
+                                }
+                            });
+
+                        });
+                        submit.trigger('click');
+                    }
+                });
+            }
+        }
+        $('.layui-btn.layuiadmin-btn-admin').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+</body>
+</html>
+

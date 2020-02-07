@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <title>角色管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-role" data-type="add">添加</button>
+                <button class="layui-btn layuiadmin-btn-role" data-type="edit">编辑</button>
+                <button class="layui-btn layuiadmin-btn-role" data-type="batchdel">删除</button>
+                <button class="layui-btn layuiadmin-btn-role" data-type="editPrivileges">修改权限</button>
+            </div>
+
+            <table id="LAY-user-back-role" lay-filter="LAY-user-back-role"></table>
+            <script type="text/html" id="roleStatus">
+                {{#  if(d.status == 0){ }}
+                <button class="layui-btn layui-btn-xs">正常</button>
+                {{#  } else { }}
+                <button class="layui-btn layui-btn-primary layui-btn-xs">禁用</button>
+                {{#  } }}
+            </script>
+            <script type="text/html" id="table-useradmin-admin">
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i
+                        class="layui-icon layui-icon-edit"></i>编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i
+                        class="layui-icon layui-icon-delete"></i>删除</a>
+            </script>
+        </div>
+    </div>
+</div>
+
+<script src="/layuiadmin/layui/layui.js"></script>
+<script>
+    layui.config({
+        base: '/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'useradmin', 'table'], function () {
+        var $ = layui.$
+            , form = layui.form
+            , table = layui.table;
+
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('LAY-user-back-role')
+                    , checkData = checkStatus.data; //得到选中的数据
+                //console.log(checkStatus);
+                console.log(JSON.stringify(checkData))
+                if (checkData.length === 0) {
+                    return layer.msg('请选择数据');
+                }
+                for (var i = 0; i < checkData.length; i++) {
+                    var id = checkData[i].id;
+                    if (id == "1" || id == "2" || id == "3"||id == "4"||id == "5"||id == "6") {
+                        return layer.msg("系统自带角色不可删除，请重新选择！");
+                    }
+                }
+
+                layer.confirm('确定删除吗？', function (index) {
+                    $.ajax({
+                        url: "/basicSystem/delRole",
+                        type: "POST",
+                        data: JSON.stringify(checkData),
+                        contentType: "application/json",
+                        dataType: 'json',
+                        beforeSend: function (loading) {
+                            loading = layer.load(0, {shade: false});
+                        },
+                        success: function (res) {
+                            if (res.code == "0") {
+                                layer.msg("操作成功");
+                                table.reload('LAY-user-back-role'); //数据刷新
+                            } else {
+                                layer.msg(res.msg);
+                            }
+                            layer.closeAll('loading'); //关闭loading图标
+                            layer.close(index); //关闭弹层
+                        },
+                        error: function () {
+                            layer.msg("出现问题，请稍后重试！");
+                            layer.closeAll('loading'); //关闭loading图标
+                        }
+                    });
+                });
+            },
+            add: function () {
+                layer.open({
+                    type: 2
+                    , title: '添加新角色'
+                    , content: '/basicSystem/addRole'
+                    , area: ['400px', '380px']
+                    , btn: ['确定', '取消']
+                    , yes: function (index, layero) {
+                        var iframeWindow = window['layui-layer-iframe' + index]
+                            , submitID = 'addRole-submit-button'
+                            , submit = layero.find('iframe').contents().find('#' + submitID);
+                        iframeWindow.layui.form.on('submit(' + 'addRole-form' + ')', function (data) {
+                            var loading;
+                            var field = data.field; //获取提交的字段
+                            console.log("获取到的addRole提交的字段：" + JSON.stringify(field));
+                            //提交 Ajax 成功后，静态更新表格中的数据
+                            $.ajax({
+                                url: "/basicSystem/addRole",
+                                type: "POST",
+                                data: JSON.stringify(field),
+                                contentType: "application/json",
+                                dataType: 'json',
+                                beforeSend: function (loading) {
+                                    loading = layer.load(0, {shade: false});
+                                },
+                                success: function (res) {
+                                    if (res.code == "0") {
+                                        table.reload('LAY-user-back-role'); //数据刷新
+                                        layer.msg("操作成功");
+                                    } else {
+                                        layer.msg(res.msg);
+                                    }
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    layer.close(index); //关闭弹层
+                                },
+                                error: function () {
+                                    layer.msg("出现问题，请稍后重试！");
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    //layer.close(index); //关闭弹层
+                                }
+                            });
+                        });
+
+                        submit.trigger('click');
+                    }
+                });
+            }
+            ,edit: function () {
+                var checkStatus = table.checkStatus('LAY-user-back-role')
+                    , checkData = checkStatus.data; //得到选中的数据
+                if (checkData.length === 0) {
+                    return layer.msg('请选择数据');
+                }
+                if (checkData.length > 1) {
+                    return layer.msg('请勿选择多条数据');
+                }
+                window.pdata = checkData[0];//给弹窗使用的数据
+                layer.open({
+                    type: 2
+                    , title: '编辑管理员'
+                    , content: '/basicSystem/editRole'
+                    , area: ['400px', '380px']
+                    , btn: ['确定', '取消']
+                    , yes: function (index, layero) {
+                        console.log("index is :"+index);
+                        var iframeWindow = window['layui-layer-iframe' + index]
+                            , submitID = 'editRole-submit-button'
+                            , submit = layero.find('iframe').contents().find('#' + submitID);
+                        iframeWindow.layui.form.on('submit(' + 'editRole-form' + ')', function (data) {
+                            var loading;
+                            var field = data.field; //获取提交的字段
+                            console.log("获取到的editRole提交的字段："+JSON.stringify(field));
+                            //提交 Ajax 成功后，静态更新表格中的数据
+                            $.ajax({
+                                url: "/basicSystem/editRole",
+                                type: "POST",
+                                data: JSON.stringify(field),
+                                contentType: "application/json",
+                                dataType: 'json',
+                                beforeSend: function (loading) {
+                                    loading = layer.load(0, {shade: false});
+                                },
+                                success: function (res) {
+                                    if (res.code == "0") {
+                                        table.reload('LAY-user-back-role'); //数据刷新
+                                        layer.msg("操作成功");
+                                    } else {
+                                        layer.msg(res.msg);
+                                    }
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    layer.close(index); //关闭弹层
+                                },
+                                error: function () {
+                                    layer.msg("出现问题，请稍后重试！");
+                                    layer.closeAll('loading'); //关闭loading图标
+                                    //layer.close(index); //关闭弹层
+                                }
+                            });
+
+                        });
+                        submit.trigger('click');
+                    }
+                });
+            }
+        }
+        $('.layui-btn.layuiadmin-btn-role').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+</script>
+</body>
+</html>
+

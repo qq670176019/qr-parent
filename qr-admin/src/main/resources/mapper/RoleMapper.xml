@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qr.admin.mapper.RoleMapper">
+
+    <resultMap id="RoleEntityMap" type="com.qr.common.entity.RoleEntity">
+        <result column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="roleKey" jdbcType="VARCHAR" property="roleKey"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="status" jdbcType="CHAR" property="status"/>
+        <result column="createTime" jdbcType="VARCHAR" property="createTime"/>
+        <result column="modifyTime" jdbcType="VARCHAR" property="modifyTime"/>
+    </resultMap>
+    <sql id="delete_where_cluse">
+        <where>
+            <foreach collection="list" item="role" separator=" or ">
+                <if test="role.id!=null and role.id!=''">
+                    role.id=#{role.id}
+                </if>
+                <if test="role.roleKey!=null and role.roleKey!=''">
+                    and role.roleKey=#{role.roleKey}
+                </if>
+                <if test="role.description!=null and role.description!=''">
+                    and role.description=#{role.description}
+                </if>
+                <if test="role.status!=null and role.status!=''">
+                    and role.status=#{role.status}
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="update_set_cluse">
+        <set>
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="roleKey!=null and roleKey!=''">
+                roleKey=#{roleKey},
+            </if>
+            <if test="description!=null and description!=''">
+                description=#{description},
+            </if>
+            <if test="status!=null and status!=''">
+                status=#{status},
+            </if>
+        </set>
+    </sql>
+    <!-->测试使用<!-->
+    <select id="getRole" resultType="com.qr.common.entity.RoleEntity">
+        select * from role where id = #{id}
+    </select>
+    <!-->获取所有角色，带分页<!-->
+    <select id="getAllRole" resultType="com.qr.common.entity.RoleEntity">
+        select * from role where status!=2
+    </select>
+    <!-->获取所有角色，带分页<!-->
+    <select id="getRoleById" resultType="com.qr.common.entity.RoleEntity">
+        SELECT role.* FROM role
+        INNER JOIN user_role ON(role.id=user_role.roleId)
+        WHERE user_role.userId=#{id} and role.status!=2
+    </select>
+    <!-->新增角色，注意看返回值应该如何填写<!-->
+    <insert id="addRole" parameterType="com.qr.common.entity.RoleEntity" useGeneratedKeys="true" keyProperty="id">
+        insert into role(name,roleKey,description,status)
+        values(#{name},#{roleKey},#{description},#{status})
+        <selectKey keyColumn="id" resultType="int" keyProperty="id" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+    </insert>
+    <delete id="delRole" parameterType="com.qr.common.entity.RoleEntity">
+        delete from role where id in
+        <foreach collection="list" item="role" index="index" open="(" close=")" separator=",">
+            #{role.id}
+        </foreach>
+    </delete>
+    <update id="editRole">
+        update role
+        <include refid="update_set_cluse"/>
+        where id=#{id}
+    </update>
+    <update id="resetUserRole">
+        update user_role
+        set roleId=6
+        where roleId in
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </update>
+</mapper>

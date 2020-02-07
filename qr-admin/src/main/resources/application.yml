@@ -1,0 +1,46 @@
+server:
+  port: 9001
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    platform: mysql
+    url: jdbc:mysql://127.0.0.1:3306/qrsdk?userUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 12345678
+  resources:
+    static-locations: classpath:templates/,classpath:templates/static/,classpath:templates/static/image/
+  thymeleaf:
+    prefix: classpath:/templates/
+    check-template-location: true
+    suffix: .html
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+    mode: HTML
+    cache: false
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.qr.common.entity
+#PageHelper
+# 分页配置
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+  offsetAsPageNum: true
+  rowBoundsWithCount: true
+logging:
+  level:
+    com.qr.admin.mapper: debug
+# redis配置文件
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: 123456
+  pool:
+    max-idle: 20
+    min-idle: 1
+    max-active: 20
+    max-wait: 60000
+  timeout: 30000

@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    platform: mysql
+    url: jdbc:mysql://127.0.0.1:3306/qrsdk?userUnicode=true&characterEncoding=utf8&useSSL=false&allowMultiQueries=true
+    username: root
+    password: 12345678
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT1FROMDUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    filters: stat,wall,log4j
+    logSlowSql: true
+#spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+#  jpa:
+#    properties:
+#      hibernate:
+#        show_sql: true
+#        format_Sql: true
+# redis配置文件
+redis:
+  host: 127.0.0.1
+  port: 6379
+  pool:
+    max-idle: 20
+    min-idle: 1
+    max-active: 20
+    max-wait: 60000
+  timeout: 30000
+#mybatis 配置文件
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.qr.common.entity
+#端口
+server:
+  port: 9002
+
+

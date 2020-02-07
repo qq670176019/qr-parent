@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>增加管理员</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/layuiadmin/layui/css/layui.css" media="all">
+</head>
+<body>
+
+<div class="layui-form" lay-filter="layuiadmin-form-admin" id="layuiadmin-form-admin" style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">角色</label>
+        <div class="layui-input-inline">
+            <select name="roleId" id="roleId" lay-filter="LAY-user-adminrole-type">
+
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户名称</label>
+        <div class="layui-input-inline">
+            <input type="text" name="name" lay-verify="required" placeholder="请输入用户名" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">登录账号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="username" lay-verify="username_verify" placeholder="请输入用户名" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">手机号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="mobile" lay-verify="phone|number" placeholder="请输入号码" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码</label>
+        <div class="layui-input-inline">
+            <input type="password" name="password" lay-verify="password_verify" placeholder="请输入密码" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱</label>
+        <div class="layui-input-inline">
+            <input type="text" name="email" lay-verify="email" placeholder="请输入邮箱" autocomplete="off"
+                   class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">状态</label>
+        <div class="layui-input-inline">
+            <input type="checkbox" lay-filter="status" name="status" id="status" lay-skin="switch" lay-text="正常|禁用"
+                   checked>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">锁定状态</label>
+        <div class="layui-input-inline">
+            <input type="checkbox" lay-filter="status" name="locked" id="locked" lay-skin="switch" lay-text="正常|锁定"
+                   checked>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <input type="button" lay-submit lay-filter="addAdmin-form" id="addAdmin-submit-button" value="确认">
+    </div>
+</div>
+
+<script src="/layuiadmin/layui/layui.js"></script>
+<script>
+    layui.config({
+        base: '/layuiadmin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'form'], function () {
+        var $ = layui.$
+            , form = layui.form;
+      //为角色select赋值
+      var page = 1;
+      var limit = 99999;
+      var field = new Object();
+      field.page = page;
+      field.limit = limit;
+      //提交 Ajax 成功后，静态更新表格中的数据
+      $.ajax({
+        url: "/basicSystem/getAllRole",
+        type: "POST",
+        data: JSON.stringify(field),
+        contentType: "application/json",
+        dataType: 'json',
+        beforeSend: function (loading) {
+          loading = layer.load(0, {shade: false});
+        },
+        success: function (res) {
+          if (res.code == "0") {//开始循环赋值
+            $('#roleId').empty();
+            var role;
+            for (var i = 0; i < res.data.length; i++) {
+              role = res.data[i];
+              if (role.id != 2 && role.id != 3 && role.id != 4 && role.id != 5) {//这四个角色无法在这里新增
+                $('#roleId').append(new Option(role.name, role.id));
+              }
+            }
+            form.render();
+          } else {
+            layer.msg(res.msg);
+          }
+          layer.closeAll('loading'); //关闭loading图标
+        },
+        error: function () {
+          layer.msg("出现问题，请稍后重试！");
+          layer.closeAll('loading'); //关闭loading图标
+          //layer.close(index); //关闭弹层
+        }
+      });
+
+
+
+        form.render('select');
+        /* 自定义验证规则 */
+        form.verify({
+            username_verify: function (value) {
+                if (value.length < 5) {
+                    return '登录账号不能少于5位';
+                }
+            }
+            , password_verify: [/(.+){6,12}$/, '密码必须6到12位']
+            , content: function (value) {
+                layedit.sync(editIndex);
+            }
+        });
+    })
+</script>
+</body>
+</html>
