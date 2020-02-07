@@ -37,7 +37,7 @@ public class CustomException extends RuntimeException{
         super(message);
     }
     public CustomException(int code,String message) {
-        super(message);
+        this.message=message;
         this.code=code;
     }
 
@@ -51,5 +51,13 @@ public class CustomException extends RuntimeException{
 
     public CustomException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    @Override
+    public String toString() {
+        return "CustomException{" +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

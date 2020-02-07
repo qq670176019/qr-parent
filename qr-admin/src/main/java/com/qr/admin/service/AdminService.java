@@ -62,12 +62,15 @@ public class AdminService {
         //使用PageHelper获取分页和分页count
         PageHelper.startPage(adminEntity.getPage(), adminEntity.getLimit());//页码，每页数量
         List<AdminEntity> adList = adMapper.queryAdmin(adminEntity);//通过mybatis获取所有结果
+        //查询角色信息
+        for (AdminEntity ad:adList) {
+            RoleEntity rr=roleMapper.getRoleById(ad);
+            ad.setRoleEntity(rr);
+        }
         PageInfo<AdminEntity> pageInfo = new PageInfo<>(adList);//将所有结果给pageinfo
         List resultList = pageInfo.getList();
-        System.out.println("后台查询到的数据" + resultList.toString());
         //将结果集封装到页面bean中
         ResultBean<List<AdminEntity>> administratorEntityResultBeanList = new ResultBean<>(resultList, resultList.size());
-        System.out.println("resultBean: " + administratorEntityResultBeanList);
         return administratorEntityResultBeanList;
     }
 

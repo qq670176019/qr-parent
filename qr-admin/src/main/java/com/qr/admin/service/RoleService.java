@@ -2,11 +2,12 @@ package com.qr.admin.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.qr.admin.mapper.AdminMapper;
 import com.qr.admin.mapper.RoleMapper;
 import com.qr.common.bean.ResultBean;
 import com.qr.common.entity.AdminEntity;
 import com.qr.common.entity.RoleEntity;
-import com.qr.common.utils.PasswordUtils;
+import com.qr.common.exceptions.CustomException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ import java.util.List;
 public class RoleService {
     @Autowired
     RoleMapper roleMapper;
+    @Autowired
+    AdminMapper adminMapper;
     private Logger logger= LoggerFactory.getLogger(RoleService.class);
 
     public ResultBean<List<RoleEntity>> getAllRole(RoleEntity roleEntity){
@@ -96,7 +99,15 @@ public class RoleService {
             rb.setMsg("部分操作未执行成功，请联系管理员!");
         }
         //执行修改user_role表，将已经删除的角色原有的用户角色重新设置一下
-        roleMapper.resetUserRole(roleEntityList);
+        for (RoleEntity r:roleEntityList) {
+            List<AdminEntity> list=adminMapper.getAdminUserListByRoleId(r);
+            logger.info("list is "+list.toString());
+            logger.info("list size "+list.size());
+            if(true){
+                String msg=r.getName()+"角色下有用户，不可删除";
+                throw new CustomException(1,msg);
+            }
+        }
         return rb;
     }
     public ResultBean<RoleEntity> editRole(RoleEntity roleEntity){

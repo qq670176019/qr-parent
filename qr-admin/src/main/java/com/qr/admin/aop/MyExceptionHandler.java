@@ -1,6 +1,7 @@
 package com.qr.admin.aop;
 
 import com.qr.common.bean.ResultBean;
+import com.qr.common.exceptions.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authz.AuthorizationException;
@@ -28,6 +29,16 @@ public class MyExceptionHandler {
         ResultBean result=new ResultBean();
         result.setMsg("用户名或密码错误");
         result.setCode(1);
+        return result;
+    }
+
+    @ExceptionHandler
+    @ResponseBody
+    public ResultBean CustomExceptionHandler(CustomException e){
+        log.error(e.toString());
+        ResultBean result=new ResultBean();
+        result.setMsg(e.getMessage());
+        result.setCode(e.getCode());
         return result;
     }
 }

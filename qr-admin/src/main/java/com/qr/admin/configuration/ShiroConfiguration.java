@@ -18,7 +18,7 @@ import java.util.Map;
  * @author:Jascon
  * @date:2020-02-03 14:08
  */
-@Configuration
+//@Configuration
 public class ShiroConfiguration {
     @Autowired
     private CustomRealm customRealm;

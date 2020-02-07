@@ -109,7 +109,7 @@ public class CustomRealm extends AuthorizingRealm {
             throw new UnknownAccountException();
         } else if (queryEntity.getLocked().equals("1")) {//检查是否被锁定
             throw new CustomAuthenticationException(1, CustomAuthenticationException.UserLocked);
-        } else if (queryEntity.getStatus().equals("1")) {//检查是否被锁定
+        } else if (queryEntity.getStatus().equals("1")) {//检查是否被禁用
             throw new CustomAuthenticationException(1, CustomAuthenticationException.UserDisabled);
         } else {//验证登陆用户密码是否正确
             String MD5SaltPwd = PasswordUtils.getSaltMD5(PasswordUtils.md5Hex(user.getPassword()), queryEntity.getSalt());//获取加盐密码

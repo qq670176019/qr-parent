@@ -59,6 +59,11 @@
         INNER JOIN user_role ON(role.id=user_role.roleId)
         WHERE user_role.userId=#{id} and role.status!=2
     </select>
+    <select id="getChannelRoleById" resultType="com.qr.common.entity.RoleEntity">
+        SELECT role.* FROM role
+        INNER JOIN user_role ON(role.id=user_role.roleId)
+        WHERE user_role.userId=#{id} and role.status!=2
+    </select>
     <!-->新增角色，注意看返回值应该如何填写<!-->
     <insert id="addRole" parameterType="com.qr.common.entity.RoleEntity" useGeneratedKeys="true" keyProperty="id">
         insert into role(name,roleKey,description,status)
@@ -84,6 +89,12 @@
         where roleId in
         <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
             #{item.id}
+        </foreach>
+    </update>
+    <update id="reAddUserRole">
+        insert into user_role(userId,roleId) values
+        <foreach collection="list" item="item" index="index" open="" close="" separator=",">
+            (#{item.userId},#{item.roleId})
         </foreach>
     </update>
 </mapper>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.qr.admin.mapper.AdminMapper">
+<mapper namespace="com.qr.channel.mapper.ChannelMapper">
 
-    <resultMap id="AdminEntityMap" type="com.qr.common.entity.AdminEntity">
+    <resultMap id="ChannelEntityMap" type="com.qr.common.entity.ChannelEntity">
         <result column="id" jdbcType="INTEGER" property="id"/>
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="username" jdbcType="VARCHAR" property="username"/>
@@ -14,9 +14,12 @@
         <result column="status" jdbcType="CHAR" property="status"/>
         <result column="createTime" jdbcType="VARCHAR" property="createTime"/>
         <result column="modifyTime" jdbcType="VARCHAR" property="modifyTime"/>
-        <result column="canDelete" jdbcType="INTEGER" property="canDelete"/>
+        <result column="isSchargeOpen" jdbcType="INTEGER" property="isSchargeOpen"/>
+        <result column="parentId" jdbcType="INTEGER" property="parentId"/>
+        <result column="parentName" jdbcType="VARCHAR" property="parentName"/>
+        <result column="qq" jdbcType="VARCHAR" property="qq"/>
     </resultMap>
-    <sql id="admin_query_where_cluse">
+    <sql id="channel_query_where_cluse">
         <where>
             <if test="id!=null and id!=''">
                 id=#{id}
@@ -38,7 +41,7 @@
             </if>
         </where>
     </sql>
-    <sql id="admin_update_set_cluse">
+    <sql id="channel_update_set_cluse">
         <set>
             <if test="name!=null and name!=''">
                 name=#{name},
@@ -66,83 +69,76 @@
             </if>
         </set>
     </sql>
-    <sql id="admin_delete_where_cluse">
+    <sql id="channel_delete_where_cluse">
         <where>
-            <foreach collection="list" item="admin" separator=" and ">
-                <if test="admin.id!=null and admin.id!=''">
-                    admin.id=#{admin.id}
+            <foreach collection="list" item="channel" separator=" and ">
+                <if test="channel.id!=null and channel.id!=''">
+                    channel.id=#{channel.id}
                 </if>
-                <if test="admin.name!=null and admin.name!=''">
-                    admin.name=#{admin.name}
+                <if test="channel.name!=null and channel.name!=''">
+                    channel.name=#{channel.name}
                 </if>
-                <if test="admin.username!=null and admin.username!=''">
-                    admin.username=#{admin.username}
+                <if test="channel.username!=null and channel.username!=''">
+                    channel.username=#{channel.username}
                 </if>
-                <if test="admin.password!=null and admin.password!=''">
-                    admin.password=#{admin.password}
+                <if test="channel.password!=null and channel.password!=''">
+                    channel.password=#{channel.password}
                 </if>
-                <if test="admin.mobile!=null and admin.mobile!=''">
-                    admin.mobile=#{admin.mobile}
+                <if test="channel.mobile!=null and channel.mobile!=''">
+                    channel.mobile=#{channel.mobile}
                 </if>
-                <if test="admin.email!=null and admin.email!=''">
-                    admin.email=#{admin.email}
+                <if test="channel.email!=null and channel.email!=''">
+                    channel.email=#{channel.email}
                 </if>
             </foreach>
         </where>
     </sql>
     <!-->获取所有管理员,无关id，带分页<!-->
-    <select id="getAllAdmin" resultMap="AdminEntityMap">
-        SELECT user.*,admin_user.canDelete FROM USER
-        INNER JOIN admin_user ON(user.id=admin_user.userId)
-        INNER JOIN user_role ON(user_role.userId=user.id)
-        INNER JOIN role ON(role.id=user_role.roleId)
+    <select id="getAllchannel" resultMap="ChannelEntityMap">
+        SELECT user.*,channel_user.isSchargeOpen,channel_user.parentId,channel_user.qq
+        FROM USER
+        INNER JOIN channel_user ON(channel_user.userId=user.id)
     </select>
-    <select id="queryAdmin" resultMap="AdminEntityMap" parameterType="com.qr.common.entity.AdminEntity">
-        SELECT user.*,admin_user.canDelete FROM user
-        inner join admin_user on(user.id=admin_user.userId)
-        <include refid="admin_query_where_cluse"/>
+    <select id="querychannel" resultMap="ChannelEntityMap" parameterType="com.qr.common.entity.ChannelEntity">
+        SELECT user.*,channel_user.canDelete FROM user
+        inner join channel_user on(user.id=channel_user.userId)
+        <include refid="channel_query_where_cluse"/>
     </select>
     <!-->新增角色，注意看返回值应该如何填写<!-->
-    <insert id="addAdmin" parameterType="com.qr.common.entity.AdminEntity" useGeneratedKeys="true" keyProperty="id">
+    <insert id="addchannel" parameterType="com.qr.common.entity.ChannelEntity" useGeneratedKeys="true" keyProperty="id">
         insert into user(name,username,password,salt,locked,status,mobile,email)
         values(#{name},#{username},#{password},#{salt},#{locked},#{status},#{mobile},#{email})
         <selectKey keyColumn="id" resultType="int" keyProperty="id" order="AFTER">
             select last_insert_id()
         </selectKey>
     </insert>
-    <insert id="addAdminUser" parameterType="com.qr.common.entity.AdminEntity">
-        insert into admin_user(userId)
+    <insert id="addchannelUser" parameterType="com.qr.common.entity.ChannelEntity">
+        insert into channel_user(userId)
         values(#{id})
     </insert>
-    <insert id="addUserRole" parameterType="com.qr.common.entity.AdminEntity">
+    <insert id="addChannelUserRole" parameterType="com.qr.common.entity.ChannelEntity">
         INSERT INTO user_role(userId,roleId) VALUES(#{id},#{roleId})
     </insert>
-    <update id="editAdmin">
+    <update id="editchannel">
         update user
-        <include refid="admin_update_set_cluse"/>
+        <include refid="channel_update_set_cluse"/>
         where id=#{id}
     </update>
     <!--update user_role表，如果修改角色的话 -->
-    <update id="editUserRole">
+    <update id="editChannelUserRole">
         update user_role
         set roleId=#{roleId}
         where userId=#{id}
     </update>
-    <delete id="delAdmin" parameterType="java.util.List">
+    <delete id="delchannel" parameterType="java.util.List">
         delete from user
         where id in
-        <foreach collection="list" item="admin" open="(" close=")" index="index" separator=",">
-            #{admin.id}
+        <foreach collection="list" item="channel" open="(" close=")" index="index" separator=",">
+            #{channel.id}
         </foreach>
     </delete>
-    <select id="getAdminByUsername" resultMap="AdminEntityMap" parameterType="com.qr.common.entity.AdminEntity">
+    <select id="getchannelByUsername" resultMap="ChannelEntityMap" parameterType="com.qr.common.entity.ChannelEntity">
         select * from user where username=#{username}
-    </select>
-    <select id="getAdminUserListByRoleId" resultMap="AdminEntityMap" parameterType="com.qr.common.entity.RoleEntity">
-        SELECT user.*,admin_user.canDelete FROM USER
-        INNER JOIN admin_user ON(admin_user.userId=user.id)
-        INNER JOIN user_role ON(user_role.userId=user.id)
-        WHERE user_role.roleId=#{id}
     </select>
 
 </mapper>

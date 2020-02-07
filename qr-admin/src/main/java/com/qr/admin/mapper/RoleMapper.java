@@ -3,6 +3,7 @@ package com.qr.admin.mapper;
 import com.qr.common.bean.ResultBean;
 import com.qr.common.entity.AdminEntity;
 import com.qr.common.entity.RoleEntity;
+import com.qr.common.entity.UserEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,9 +17,10 @@ import java.util.List;
 public interface RoleMapper {
     RoleEntity getRole(int id);
     List<RoleEntity> getAllRole();
-    RoleEntity getRoleById(AdminEntity adminEntity);
+    RoleEntity getRoleById(UserEntity userEntity);
     int addRole(RoleEntity roleEntity);
     int delRole(List<RoleEntity> roleEntityList);
     int editRole(RoleEntity roleEntity);
     int resetUserRole(List<RoleEntity> roleEntityList);
+    int reAddUserRole(List<RoleEntity> roleEntityList);
 }

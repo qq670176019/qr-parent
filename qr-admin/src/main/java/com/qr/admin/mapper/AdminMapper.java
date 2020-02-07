@@ -1,6 +1,7 @@
 package com.qr.admin.mapper;
 
 import com.qr.common.entity.AdminEntity;
+import com.qr.common.entity.RoleEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,6 +21,8 @@ public interface AdminMapper {
     int editUserRole(AdminEntity adminEntity);
     List<AdminEntity> getAllAdmin();
     List<AdminEntity> queryAdmin(AdminEntity adminEntity);
+    List<AdminEntity> getAdminUserListByRoleId(RoleEntity roleEntity);
     AdminEntity getAdminByAccountName(AdminEntity adminEntity);
     AdminEntity getAdminByUsername(AdminEntity adminEntity);
+
 }
